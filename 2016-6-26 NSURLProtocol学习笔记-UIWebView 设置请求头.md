@@ -4,7 +4,7 @@
  NSURLProtocol 对象处理加载特定的url。它是一个为处理特定scheme url提供基础解决方案的抽象类。我们可以创建App支持的解决特定协议或者url的子类。
 
 下面是我处理的代码，在`viewDidLoad`方法里面调用 `registerClass:` 方法，`dealloc`里面调用`unregisterClass:`方法
-```
+``` Objective-C
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";
 @interface NSCustomHeaderURLProtocol () <NSURLConnectionDelegate>
 @property (nonatomic, strong) NSURLConnection *connection;
@@ -118,22 +118,22 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";
 `NSURLProtocolClient`为`NSURLProtocol`提供与`URL loading system`交换的接口。App没有必要去实现该协议。从上面看到的代码看到，在`NSURLConnectionDelegate`的代理方法里面有`client`响应的处理方法。
 
 ####总结
-1、当然了，这里的网络请求也可以用 `NSURLSession`，只要将请求返回的数据让`client`与`URL loading system`交互即可。
-2、上面的代码处理是参考的[matt大神的NSEtcHosts](https://github.com/mattt/NSEtcHosts)
-3、[Apple Sample Code]([https://developer.apple.com/library/ios/navigation/#section=Resource%20Types&topic=Sample%20Code](https://developer.apple.com/library/ios/navigation/#section=Resource%20Types&topic=Sample%20Code)里面竟然没有`NSURLProtocol`的samplecode
-4、`NSURLProtocol`这种处理对`WKWebView`是不起作用的，因为`WKWebView`的加载时在另外一个进程里面。(`search keyword:wkwebview set header、 wkwebview custom header`)([WKWebViewでNSURLRequestをPOSTするとヘッダーが消える問題（解決）](http://labs.torques.jp/2015/10/06/4045/)、[Can't set headers on my WKWebView POST request](http://stackoverflow.com/questions/26253133/cant-set-headers-on-my-wkwebview-post-request)、[How To add HttpHeader in request globally for ios swift](http://stackoverflow.com/questions/28984212/how-to-add-httpheader-in-request-globally-for-ios-swift/37474812#37474812)、
+* 1、当然了，这里的网络请求也可以用 `NSURLSession`，只要将请求返回的数据让`client`与`URL loading system`交互即可。
+* 2、上面的代码处理是参考的[matt大神的NSEtcHosts](https://github.com/mattt/NSEtcHosts)
+* 3、[Apple Sample Code]([https://developer.apple.com/library/ios/navigation/#section=Resource%20Types&topic=Sample%20Code](https://developer.apple.com/library/ios/navigation/#section=Resource%20Types&topic=Sample%20Code)里面竟然没有`NSURLProtocol`的samplecode
+* 4、`NSURLProtocol`这种处理对`WKWebView`是不起作用的，因为`WKWebView`的加载时在另外一个进程里面。(`search keyword:wkwebview set header、 wkwebview custom header`)([WKWebViewでNSURLRequestをPOSTするとヘッダーが消える問題（解決）](http://labs.torques.jp/2015/10/06/4045/)、[Can't set headers on my WKWebView POST request](http://stackoverflow.com/questions/26253133/cant-set-headers-on-my-wkwebview-post-request)、[How To add HttpHeader in request globally for ios swift](http://stackoverflow.com/questions/28984212/how-to-add-httpheader-in-request-globally-for-ios-swift/37474812#37474812)、
 [WKWebView and NSURLProtocol not working](http://stackoverflow.com/questions/24208229/wkwebview-and-nsurlprotocol-not-working)）
 
 
 ####参考链接
-https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSURLProtocol_Class/
-https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Protocols/NSURLProtocolClient_Protocol/
-https://github.com/mattt/NSEtcHosts
-http://stackoverflow.com/questions/25539837/how-to-add-customize-http-headers-in-uiwebview-request-my-uiwebview-is-based-on
+* https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSURLProtocol_Class/
+* https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Protocols/NSURLProtocolClient_Protocol/
+* https://github.com/mattt/NSEtcHosts
+* http://stackoverflow.com/questions/25539837/how-to-add-customize-http-headers-in-uiwebview-request-my-uiwebview-is-based-on
 
-####其他链接
-[NSURLProtocol Tutorial](https://www.raywenderlich.com/59982/nsurlprotocol-tutorial)
-[NSURLProtocol - nshipster](http://nshipster.com/nsurlprotocol/)
-[NSURLProtocol - xiongzenghuidegithub](http://xiongzenghuidegithub.github.io/blog/2015/01/07/nsurlprotocol/)
-[iOS开发之--- NSURLProtocol](http://www.jianshu.com/p/7c89b8c5482a)
-[研究笔记：iOS中使用WebViewProxy拦截URL请求](https://yq.aliyun.com/articles/7470?spm=5176.100239.blogrightarea55708.13.Tob8Rp)
+####其他学习链接
+* [NSURLProtocol Tutorial](https://www.raywenderlich.com/59982/nsurlprotocol-tutorial)
+* [NSURLProtocol - nshipster](http://nshipster.com/nsurlprotocol/)
+* [NSURLProtocol - xiongzenghuidegithub](http://xiongzenghuidegithub.github.io/blog/2015/01/07/nsurlprotocol/)
+* [iOS开发之--- NSURLProtocol](http://www.jianshu.com/p/7c89b8c5482a)
+* [研究笔记：iOS中使用WebViewProxy拦截URL请求](https://yq.aliyun.com/articles/7470?spm=5176.100239.blogrightarea55708.13.Tob8Rp)
