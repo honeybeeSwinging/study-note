@@ -37,6 +37,7 @@ Xcode project 是个构建一个或者多个产品所需要的文件，资源，
 
 A project 可以单独存在，也可以被包含在 workspace 里面(cocoapods 就是被包含在 workspace 里面)。
 
+`You use Xcode schemes to specify which target, build configuration, and executable configuration is active at a given time.`
 你用 Xcode scheme 去指定哪个 target，编译配置，可执行配置 在规定的时间(即运行的时候)是有效的。
 
 
@@ -72,11 +73,79 @@ workspace 中的每个 project 仍然有属于它们自己的独立的标识。�
 
 ##Xcode Scheme
 `An Xcode scheme defines a collection of targets to build, a configuration to use when building, and a collection of tests to execute.`
+
 Xcode scheme 定义了构建的很多 targets，构建时的配置，以及需要执行的测试等。
 
 你可以有多个你想要的 scheme，但是只有一个是有效的。我们可以指定一个 scheme 保存在 project(在 project 所属的 workspace 中也是有效的) 还是 workspace(只有当前 workspace 是有效的) 中。当你选择了 scheme 以后，也就意味着你选择了运行的目的（即哪个产品去构建）。
 
+##总结
+ * 一个 target 代表一个产品
+ * project 包含了构建产品所需的源文件，一个 project 可以有多个 target
+ * build settings 就是构建产品时的一些设置，target 可以覆盖 project 一些相同的设置
+ * workspace 是一种 Xcode文档，用来组织管理 project 和其他文档的，workspace 可以包含多个 project，project 可以属于多个 workspace
+ * scheme 决定了哪个 target 去运行，它可以针对编译，运行，测试，打包等进行配置
+
+###参考链接
+[Xcode workspace project target scheme](http://stackoverflow.com/questions/20637435/xcode-what-is-a-target-and-scheme-in-plain-language)
 
 
+#实践
+##环境分离
+###使用多 target 进行环境分离
+首先创建一个 XcodeConcepts 的工程，其实 Xcode 已经默认为我们做了 Debug 和 Release 的配置。
 
+![](../Images/default configurations.png)
 
+打开 scheme，在 run 选项中，我们可以选择 Build Configuration，Executable 等设置(在 Edit Scheme -> Run)。
+
+![](../Images/default scheme.png)
+
+嗯，现在来创建一个 target，
+
+![](../Images/duplicate target.png)
+
+在弹出来的选择框中选择 "Duplicate Only"，这样就创建好了，现在在 scheme manage 里面我们就能看的可以选择哪个 target 去运行了。
+
+![](../Images/duplicate scheme1.png)
+
+当然，你可以觉得 Xcode 默认为我们生成 copy 名字不好听，你也可以改名字，在 scheme manage 里面，选择要改的 Scheme，按回车输入新名字，当然你也可以在 Targets 里面、相关 plist 文件也修改成相应的名字。注意，plist 文件改名成功后，我们还得改变它的物理路径，改完以后，再添加进入工程中，这时你选中 XcodeConceptsTest -> Info 时，它报`Information from info.plist not available.File may not exist at specfiied path.` 这时，你应该在该 target 中的 Build Settings -> Packaging -> Info.plist File 设置中设置值为 `$(SRCROOT)/XcodeConcepts/XcodeConceptsTest.plist`。 $(SRCROOT) 就是代表你当前工程目录的根目录，即 xxxx/XcodeConcepts。
+
+问题：为什么创建的 Xcode 工程中 Info.plist 文件中的右侧的 Target Membership 是没有勾选的，所以我加入 XcodeConceptsTest.plist 的时候也没有选择任何 target，只要在 Packaging -> Info.plist File 指定路径后，Xcode 会自动帮我们处理的。但是，我们创建文件的时候，就得需要勾选两个 target 的了，不然编译没有添加的那个时会报错的，找不到该资源文件。
+
+![](../Images/rename target.png)
+
+如果想要在手机上面同时展示这两个 App 的话，我们得设置它们为不同的 Bundle Identifier，Targets -> General -> Bundle Identifier 中调整。
+
+为了方便展示，我将 target 的名字($(PRODUCT_NAME))改成 one 和 two，在各个 Targets -> Info -> Bundle name。但是会运行失败，Xcode 报错：
+
+`The operation couldn’t be completed. (LaunchServicesError error 0.)`
+
+我们将 Xcode clean 一下，再重新运行就好了。
+
+![](../Images/display simulation.png)
+
+那么如何在代码里面辨别是哪个 target 呢，我们可以用 `[[NSBundle mainBundle] bundleIdentifier]` bundleIdentifier 字符串来判断，我们也可以用预处理宏来处理，选择 target -> Build Settings -> Preprocessor Macros，将宏改成 TEST。
+
+![](../Images/distinguish two target.png)
+
+这样，就可以用宏来判断了。
+
+```
+    NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
+    NSDictionary *dict = [[NSProcessInfo processInfo] environment];
+    NSLog(@"environment :%@",dict);
+#ifdef TEST
+    NSLog(@"test environment:%@",identifier);
+#else
+    NSLog(@"normal environment:%@",identifier);
+#endif
+```
+
+其实还可以分环境来指定，例如，在 XcodeConcepts target 里面的 Preprocessor Macros 中 Debug 加入 TEST=0，在 XcodeConceptsTest 相应位置加入 TEST=1，当然这个只是在 Debug 环境下有用咯。
+
+当然你还可以在不同的 target 里面指定启动图片以及 icon 等。
+
+####参考链接
+ * [using-xcode-targets](http://www.appcoda.com/using-xcode-targets/)
+ * [how to detect targets in project](http://stackoverflow.com/questions/6964630/xcode-project-how-to-detect-target-programatically-or-how-to-use-env-vars)
+ * [why plist.file Target Membership is not check](http://stackoverflow.com/questions/3095612/warning-the-copy-bundle-resources-build-phase-contains-this-targets-info-plist)
