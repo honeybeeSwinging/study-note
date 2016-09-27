@@ -61,7 +61,7 @@ workspace 是一种 Xcode 文档，它组织 projects 和其他文档，这样�
 ###Workspaces Extend the Scope of Your Workflow
 一个 project 文件包含指向工程中的所有文件，以及构建配置和其他工程信息。在 Xcode4 及以后，你可以选择创建一个 workspace 去管理一个或者多个 project ，添加其他你想要添加的文件。一个 project 可以属于多个 workspace。
 
-![apple workspace_hierarchy](../Images/workspace_hierarchy.jpg)
+![apple workspace_hierarchy](../Images/Xcode/workspace_hierarchy.jpg)
 
 ###Projects in a Workspace Share a Build Directory
 默认情况下，workspace 下面的 projects 都是在同一个目录下构建的，也就是 workspace 的编译目录(workspace build directory)。由于是在同一个目录下面，project 的资源文件都彼此都是可见的，可互相引用的。所以，如果你有多个 projects 使用相同库的时候，不需要将它分别拷贝到各个 project 中。
@@ -94,25 +94,25 @@ Xcode scheme 定义了构建的很多 targets，构建时的配置，以及需�
 ###使用多 target 进行环境分离
 首先创建一个 XcodeConcepts 的工程，其实 Xcode 已经默认为我们做了 Debug 和 Release 的配置。
 
-![](../Images/default configurations.png)
+![](../Images/Xcode/default configurations.png)
 
 打开 scheme，在 run 选项中，我们可以选择 Build Configuration，Executable 等设置(在 Edit Scheme -> Run)。
 
-![](../Images/default scheme.png)
+![](../Images/Xcode/default scheme.png)
 
 嗯，现在来创建一个 target，
 
-![](../Images/duplicate target.png)
+![](../Images/Xcode/duplicate target.png)
 
 在弹出来的选择框中选择 "Duplicate Only"，这样就创建好了，现在在 scheme manage 里面我们就能看的可以选择哪个 target 去运行了。
 
-![](../Images/duplicate scheme1.png)
+![](../Images/Xcode/duplicate scheme1.png)
 
 当然，你可以觉得 Xcode 默认为我们生成 copy 名字不好听，你也可以改名字，在 scheme manage 里面，选择要改的 Scheme，按回车输入新名字，当然你也可以在 Targets 里面、相关 plist 文件也修改成相应的名字。注意，plist 文件改名成功后，我们还得改变它的物理路径，改完以后，再添加进入工程中，这时你选中 XcodeConceptsTest -> Info 时，它报`Information from info.plist not available.File may not exist at specfiied path.` 这时，你应该在该 target 中的 Build Settings -> Packaging -> Info.plist File 设置中设置值为 `$(SRCROOT)/XcodeConcepts/XcodeConceptsTest.plist`。 $(SRCROOT) 就是代表你当前工程目录的根目录，即 xxxx/XcodeConcepts。
 
 问题：为什么创建的 Xcode 工程中 Info.plist 文件中的右侧的 Target Membership 是没有勾选的，所以我加入 XcodeConceptsTest.plist 的时候也没有选择任何 target，只要在 Packaging -> Info.plist File 指定路径后，Xcode 会自动帮我们处理的。但是，我们创建文件的时候，就得需要勾选两个 target 的了，不然编译没有添加的那个时会报错的，找不到该资源文件。
 
-![](../Images/rename target.png)
+![](../Images/Xcode/rename target.png)
 
 如果想要在手机上面同时展示这两个 App 的话，我们得设置它们为不同的 Bundle Identifier，Targets -> General -> Bundle Identifier 中调整。
 
@@ -122,11 +122,11 @@ Xcode scheme 定义了构建的很多 targets，构建时的配置，以及需�
 
 我们将 Xcode clean 一下，再重新运行就好了。
 
-![](../Images/display simulation.png)
+![](../Images/Xcode/display simulation.png)
 
 那么如何在代码里面辨别是哪个 target 呢，我们可以用 `[[NSBundle mainBundle] bundleIdentifier]` bundleIdentifier 字符串来判断，我们也可以用预处理宏来处理，选择 target -> Build Settings -> Preprocessor Macros，将宏改成 TEST。
 
-![](../Images/distinguish two target.png)
+![](../Images/Xcode/distinguish two target.png)
 
 这样，就可以用宏来判断了。
 
@@ -149,3 +149,98 @@ Xcode scheme 定义了构建的很多 targets，构建时的配置，以及需�
  * [using-xcode-targets](http://www.appcoda.com/using-xcode-targets/)
  * [how to detect targets in project](http://stackoverflow.com/questions/6964630/xcode-project-how-to-detect-target-programatically-or-how-to-use-env-vars)
  * [why plist.file Target Membership is not check](http://stackoverflow.com/questions/3095612/warning-the-copy-bundle-resources-build-phase-contains-this-targets-info-plist)
+
+
+###使用多 xcconfig 进行环境分离
+简单来说，就是在 Project -> Info -> Configurations，duplicate XXX build configuration，针对不同的 configuration 配置不同的 xcconfig 文件，然后在不同的 xcconfig 里面，配置 Product Bundle Identifier、SeverURL、xxxKey等等。然后 New Scheme，创建相对的 xcconfig scheme，根据不同的 scheme 配置不同的 Build Configuration，依次选中 scheme，在 Edit scheme -> Run 中，配置 Build Configuration 即可。
+
+下面来一波图~
+
+工程创建好后，Xcode 默认会为我们创建 Debug、Release 两个 Configurations.
+![](../Images/Xcode/xcconfig1.png)
+
+我们自己也可以创建 xxconfig 文件，New file -> Other -> Configuration Settings File. 
+![](../Images/Xcode/xcconfig2.png)
+
+命名为 Debug.xcconfig。这时，你就能在 Configurations 看到 Debug 选项了。注意，Xcode 默认创建后是没有选项的，只有 None。
+![](../Images/Xcode/xcconfig3.png)
+
+然后我们再创建 Release.xcconfig(预发布版本配置文件)，UAT_α.xcconfig(UAT 测试版本配置文件)，Generator.xcconfig(这个文件没有对应版本，后面再说)，然后在各个版本对应的配置文件里面写相对应的值，这里我们只举例服务端请求地址。
+![](../Images/Xcode/xcconfig4.png)
+
+再到 Configurations 里面，创建 UAT_α 对应的 Configuration，并且选择好各个 Configuration 的值。
+![](../Images/Xcode/xcconfig4-1.png)
+
+![](../Images/Xcode/xcconfig5.png)
+
+然后为 UAT_α,Release 分别创建一个 scheme，New Scheme，命名为 UAT_α,Release。
+![](../Images/Xcode/xcconfig6.png)
+
+然后为每个 scheme 配置好相应的 Configuration，Edit Scheme。
+
+Scheme       | Configuration
+-------------|-------------
+Testxcconfig | Debug  
+UAT_α        | UAT_α  
+Release      | Release  
+  
+![](../Images/Xcode/xcconfig7.png)
+
+![](../Images/Xcode/xcconfig8.png)
+
+![](../Images/Xcode/xcconfig9.png)
+
+好了，分环境的变量已经设置好了，现在让它在手机上面同时存在，那么我们就得改变它的 Bundle identifier。默认的就是 $(PRODUCT_BUNDLE_IDENTIFIER)。
+![](../Images/Xcode/xcconfig10.png)
+
+在 Targets -> Build Settings -> Product Bundle Identifier，为不同的 scheme 设置不同的 Bundle identifier。
+![](../Images/Xcode/xcconfig11.png)
+
+再来改变它的显示名字 Bundle display name，这个 key 在 plist 文件里面是没有的，我们可以创建一个。命名为`测试${BUNDLE_DISPLAY_NAME_SUFFIX}`。在刚刚创建的那三个 xxconfig 文件里面，定义它们的值。例如，在 Debug.xxconfig 里面为 `BUNDLE_DISPLAY_NAME_SUFFIX = @"1"`。
+![](../Images/Xcode/xcconfig12.png)
+
+选择每个 scheme，依次运行在模拟器上。
+![](../Images/Xcode/xcconfig13.png)
+
+当然也可以手动创建 Editor -> Add Build Setting -> Add User-Defined Setting。命名为`BUNDLE_DISPLAY_NAME_SUFFIX2`。 
+![](../Images/Xcode/xcconfig14.png)
+![](../Images/Xcode/xcconfig15.png)
+
+展开它，就会有三个选项让你填写，我们分别填写为简单的值，a,b,c。
+![](../Images/Xcode/xcconfig16.png)
+
+我们将名字重新命名一下 `测试${BUNDLE_DISPLAY_NAME_SUFFIX}${BUNDLE_DISPLAY_NAME_SUFFIX2}`。
+![](../Images/Xcode/xcconfig18.png)
+
+每个 scheme 再次运行到模拟器上
+![](../Images/Xcode/xcconfig17.png)
+
+其实，我们也可以设置不同的 Icon，在 Targets -> Build Setting -> Asset Catalog App Icon Set Name，这里就不举例一一验证了。
+
+上面提到的 Generator.xcconfig 只是一个普通的文件，你也可以命名为 Generator1.xcconfig。它的作用就是将每个 xcconfig 文件都用到的东西提取出来，我们可以将 `#include "Generator.xcconfig"` 注释掉，然后将 `GCC_PREPROCESSOR_DEFINITIONS = $(inherited) SeverURL='$(SeverURL)'` 在每个 xcconfig 文件里面都写一次。 那现在问题来了，为什么 xcconfig 文件里面的 BUNDLE_DISPLAY_NAME_SUFFIX 没有 GCC_PREPROCESSOR_DEFINITIONS。因为 GCC_PREPROCESSOR_DEFINITIONS(预编译头参数) 的作用就是将配置文件里面的常量预编译成宏，以便在代码里面用到。在 Build Settings -> Preprocessor Macros 可以看到。
+
+那么 $(inherited) 又是什么呢？ inherited 是继承的意思嘛，而 $(),${} 都是预处理的语法，所以就可以理解为 target-level 继承 project-level 的一些配置。上面有提到过，target-level 可以重载 project-level 的一些配置。
+
+还有很多的，我们可能见过，但是具体是什么却不是很懂，例如，$(SRCROOT)、$(PROJECT)等(ps，参考链接9有提到)。
+
+####总结
+其实，就是用 xcconfig 去修改 Build Settings 里面的相关值，它能根据不同的 Configuration 配置不同文件。我们要做的就是将 Build Settings 里面的一些选项在 xcconfig 里面用代码去调整设置。例如，直接用代码设置 SDKROOT、ONLY_ACTIVE_ARCH、GCC_SYMBOLS_PRIVATE_EXTERN、GCC_OPTIMIZATION_LEVEL等的值。(ps,参考链接12,13有提到)。
+
+这里只是提到了 xcconfig 文件的冰山一角，如跟 cocoapods、SDK、xcodebuild 相关的东西，还是不懂。另外，pewpewthespells [twitter](https://twitter.com/queersorceress) 、[blog](http://pewpewthespells.com/)、[github](https://github.com/samdmarshall/managing-xcode-example) 有篇博文是讲 Xcode xcconfig(ps,参考链接14) 的，很全面，另外他还有写到相关管理 Xcode 的东西。
+
+####参考链接
+ * 1.[How to Have Two Versions of the Same App on Your Device](http://nilsou.com/blog/2013/07/29/how-to-have-two-versions-of-the-same-app-on-your-device/)
+ * 2.[Xcode使用xcconfig文件配置环境](http://liumh.com/2016/05/22/use-xcconfig-config-specific-variable/)
+ * 3.[xcode-configuration-files](https://speakerdeck.com/hasseg/xcode-configuration-files)
+ * 4.[Libsyscall.xcconfig](http://opensource.apple.com/source/xnu/xnu-2422.1.72/libsyscall/Libsyscall.xcconfig)
+ * 5.[Building from the Command Line with Xcode FAQ](https://developer.apple.com/library/content/technotes/tn2339/_index.html)
+ * 6.[iOS多环境配置](http://www.jianshu.com/p/0f1e8dc0812a)
+ * 7.[What is $(inherited) in Xcode's search path settings?](http://stackoverflow.com/questions/15343122/what-is-inherited-in-xcodes-search-path-settings)
+ * 8.[xcode4的环境变量，Build Settings参数，workspace及联编设置](http://www.cnblogs.com/xiaodao/archive/2012/03/28/2422091.html)
+ * 9.[Xcode Build Setting Reference](ftp://ftp.informatimago.com/pub/mirrors/developer.apple.com/documentation/DeveloperTools/Reference/XcodeBuildSettingRef/XcodeBuildSettingRef.pdf)
+ * 10.[iOS开发必备 - 环境变量配置(Debug & Release)](http://blog.startry.com/2015/07/24/iOS_EnvWithXcconfig/)
+ * 11.[xcconfigs](https://github.com/jspahrsummers/xcconfigs)
+ * 12.[Generating Xcode Build Configuration Files with BuildSettingExtractor (xcodeproj → xcconfig)](http://jamesdempsey.net/2015/01/31/generating-xcode-build-configuration-files-with-buildsettingextractor-xcodeproj-to-xcconfig/)
+ * 13.[Using xcconfig files for your XCode Project](http://www.jontolof.com/cocoa/using-xcconfig-files-for-you-xcode-project/)
+ * 14.[The Unofficial Guide to xcconfig files](http://pewpewthespells.com/blog/xcconfig_guide.html)
+ * 15.[Building the Build System - Part 1 - Abandoning the Build Panel](http://robnapier.net/build-system-1-build-panel)

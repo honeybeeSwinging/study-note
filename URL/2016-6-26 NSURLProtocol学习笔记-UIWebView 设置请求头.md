@@ -137,6 +137,78 @@ NSURLProtocol`这种处理对`WKWebView`是不起作用的，因为`WKWebView`�
 * [How To add HttpHeader in request globally for ios swift](http://stackoverflow.com/questions/28984212/how-to-add-httpheader-in-request-globally-for-ios-swift/37474812#37474812)
 * [WKWebView and NSURLProtocol not working](http://stackoverflow.com/questions/24208229/wkwebview-and-nsurlprotocol-not-working)）
 
+####问题 重定向问题
+最近在 load webPage 的时候，发现重定向的时候 (A->B->C) 有问题，不能 load C，只能到 B，或者到 A。现在假设 (A->B) 这个情况，通过调试发现，两个 URL 的 NSURLProtocol 方法如下：
+A:
+ * canInitWithRequest:
+ * canonicalRequestForRequest:
+ * startLoading
+
+B:
+ * canInitWithRequest:
+ * canonicalRequestForRequest:
+
+也就是说 startLoading 方法没有调用，webView 就不会加载 B。后面通过查找资料发现是网络请求的原因，于是将 NSURLConnection 换成了 NSURLSession，因为 NSURLSession 有个重定向的代理方法   URLSession:task:willPerformHTTPRedirection:newRequest:completionHandler:
+
+调整后的实例代码如下(其他的代码逻辑处理还是一样的)，
+
+``` Objective-C
+- (void)startLoading {
+    NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
+    //打标签，防止无限循环
+    [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
+
+    NSURLSessionConfiguration *configure = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    self.session = [NSURLSession sessionWithConfiguration:configure delegate:self delegateQueue:queue];
+    self.task = [self.session dataTaskWithRequest:mutableReqeust];
+    [self.task resume];
+}
+
+- (void)stopLoading {
+    [self.session invalidateAndCancel];
+    self.session = nil;
+}
+
+#pragma mark - NSURLSessionDataDelegate
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+{
+    if (error) {
+        [self.client URLProtocol:self didFailWithError:error];
+    } else {
+        [self.client URLProtocolDidFinishLoading:self];
+    }
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
+didReceiveResponse:(NSURLResponse *)response
+ completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler
+{
+    [self.client URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+    completionHandler(NSURLSessionResponseAllow);
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
+{
+    [self.client URLProtocol:self didLoadData:data];
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask willCacheResponse:(NSCachedURLResponse *)proposedResponse completionHandler:(void (^)(NSCachedURLResponse * _Nullable))completionHandler
+{
+    completionHandler(proposedResponse);
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPerformHTTPRedirection:(NSHTTPURLResponse *)response newRequest:(NSURLRequest *)newRequest completionHandler:(void (^)(NSURLRequest *))completionHandler
+{
+    NSMutableURLRequest *redirectRequest = [newRequest mutableCopy];
+    [[self class] removePropertyForKey:URLProtocolHandledKey inRequest:redirectRequest];
+    [[self client] URLProtocol:self wasRedirectedToRequest:redirectRequest redirectResponse:response];
+    
+    [self.task cancel];
+    [[self client] URLProtocol:self didFailWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
+}
+```
+
 ####参考链接
 * https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSURLProtocol_Class/
 * https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Protocols/NSURLProtocolClient_Protocol/
