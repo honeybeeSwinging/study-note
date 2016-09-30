@@ -228,6 +228,8 @@ Release      | Release
 
 这里只是提到了 xcconfig 文件的冰山一角，如跟 cocoapods、SDK、xcodebuild 相关的东西，还是不懂。另外，pewpewthespells [twitter](https://twitter.com/queersorceress) 、[blog](http://pewpewthespells.com/)、[github](https://github.com/samdmarshall/managing-xcode-example) 有篇博文是讲 Xcode xcconfig(ps,参考链接14) 的，很全面，另外他还有写到相关管理 Xcode 的东西。
 
+[xcconfig demo](../Demo/Testxcconfig)
+
 ####参考链接
  * 1.[How to Have Two Versions of the Same App on Your Device](http://nilsou.com/blog/2013/07/29/how-to-have-two-versions-of-the-same-app-on-your-device/)
  * 2.[Xcode使用xcconfig文件配置环境](http://liumh.com/2016/05/22/use-xcconfig-config-specific-variable/)
