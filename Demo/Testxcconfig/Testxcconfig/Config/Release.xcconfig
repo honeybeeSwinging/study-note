@@ -1,0 +1,12 @@
+//
+//  Release.xcconfig
+//  Testxcconfig
+//
+//  Created by JoakimLiu on 16/9/27.
+//  Copyright © 2016年 JoakimLiu. All rights reserved.
+//
+
+SeverURL = @"release.xxxx.xxx";
+BUNDLE_DISPLAY_NAME_SUFFIX = @"2";
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) SeverURL='$(SeverURL)'
+//#include "Generator1.xcconfig"

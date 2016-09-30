@@ -1,0 +1,9 @@
+//
+//  Generator.xcconfig
+//  Testxcconfig
+//
+//  Created by JoakimLiu on 16/9/27.
+//  Copyright © 2016年 JoakimLiu. All rights reserved.
+//
+
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) SeverURL='$(SeverURL)'

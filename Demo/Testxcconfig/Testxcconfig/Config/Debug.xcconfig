@@ -1,0 +1,12 @@
+//
+//  Debug.xcconfig
+//  Testxcconfig
+//
+//  Created by JoakimLiu on 16/9/27.
+//  Copyright © 2016年 JoakimLiu. All rights reserved.
+//
+
+SeverURL = @"debug.xxxx.xxx";
+BUNDLE_DISPLAY_NAME_SUFFIX = @"1";
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) SeverURL='$(SeverURL)'
+//#include "Generator.xcconfig"
