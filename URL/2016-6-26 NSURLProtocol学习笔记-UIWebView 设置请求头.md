@@ -68,6 +68,13 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";
     [self.client URLProtocol:self didFailWithError:error];
 }
 
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)response {
+    if (response != nil) {
+        [[self client] URLProtocol:self wasRedirectedToRequest:request redirectResponse:response];
+    }
+    return request;
+}
+
 @end
 
 ```
@@ -221,3 +228,4 @@ didReceiveResponse:(NSURLResponse *)response
 * [NSURLProtocol - xiongzenghuidegithub](http://xiongzenghuidegithub.github.io/blog/2015/01/07/nsurlprotocol/)
 * [iOS开发之--- NSURLProtocol](http://www.jianshu.com/p/7c89b8c5482a)
 * [研究笔记：iOS中使用WebViewProxy拦截URL请求](https://yq.aliyun.com/articles/7470?spm=5176.100239.blogrightarea55708.13.Tob8Rp)
+* [NSURLProtocol和NSRunLoop的那些坑](http://xiangwangfeng.com/2014/11/29/NSURLProtocol%E5%92%8CNSRunLoop%E7%9A%84%E9%82%A3%E4%BA%9B%E5%9D%91/)
