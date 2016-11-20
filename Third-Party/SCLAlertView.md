@@ -59,7 +59,10 @@ block 要玩的比较溜，
 }
 ```
 
-该 block 的返回值类型就是自己，入参就是你要设置的属性。本来想写个 UIView 的相关设置来练下手的，结果发现已经有人写了，[传送门](https://github.com/qddnovo/LinkBlock/)。
+该 block 的返回值类型就是自己，入参就是你要设置的属性。本来想写个 UIView 的相关设置来练下手的，结果发现已经有人写了。
+
+ * [LinkBlock](https://github.com/qddnovo/LinkBlock/)
+ * [ChainableKit](https://github.com/Draveness/ChainableKit/)
 
 
 ###UIView 动画的使用
